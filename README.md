@@ -2,7 +2,7 @@
 
 Vamos Timberwolves de La Gomera!!!
 
-## Instalation
+## Installation
 
 `yarn install`
 
