@@ -4,7 +4,7 @@ const fs = require('fs');
 const readFileInput = fileName => fs.readFileSync('sampledata/in/' + fileName + '.in', 'utf8');
 
 // write file
-const writeFile = ({ dataOutput, fileName }) => fs.writeFile('sampledata/out/' + fileName + '.out', dataOutput, err => {
+const writeFile = ({ outputData, fileName }) => fs.writeFile('sampledata/out/' + fileName + '.out', outputData, err => {
   if (err) {
     return console.log(err);
   }
