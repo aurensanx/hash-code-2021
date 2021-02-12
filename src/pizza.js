@@ -44,7 +44,7 @@ const solveProblem = fileName => {
     // TODO number of ingredientes for 2, 3 and 4
     let {unique: uniqueI2, total: totalI2} = getNumberOfIngredients([pizzas[i], pizzas[i + 1]]);
     let k = i + 1;
-    for (let j = i + 2; j + 1 < Math.min(M, i + 10000); j++) {
+    for (let j = i + 2; j + 1 < Math.min(M, i + 100); j++) {
       let {unique: uniqueI2next, total: totalI2next} = getNumberOfIngredients([pizzas[i], pizzas[j]]);
       if (uniqueI2next > uniqueI2 || (uniqueI2next === uniqueI2 && totalI2next < totalI2)) {
         uniqueI2 = uniqueI2next;
