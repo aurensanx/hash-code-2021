@@ -40,16 +40,14 @@ const solveProblem = fileName => {
   let deliveriesT3 = 0;
   let deliveriesT4 = 0;
 
-  let i2next = 0;
-
   for (let i = 0; i + 1 < M; i++) {
-    console.log(i);
-    let i2 = getNumberOfUniqueIngredients([pizzas[i], pizzas[i + 1]]);
+    // TODO number of ingredientes for 2, 3 and 4
+    let {unique: uniqueI2, total: totalI2} = getNumberOfIngredients([pizzas[i], pizzas[i + 1]]);
     let k = i + 1;
-    for (let j = i + 2; j + 1 < Math.min(M, i + 100); j++) {
-      i2next = getNumberOfUniqueIngredients([pizzas[i], pizzas[j]]);
-      if (i2next > i2) {
-        i2 = i2next;
+    for (let j = i + 2; j + 1 < Math.min(M, i + 10000); j++) {
+      let {unique: uniqueI2next, total: totalI2next} = getNumberOfIngredients([pizzas[i], pizzas[j]]);
+      if (uniqueI2next > uniqueI2 || (uniqueI2next === uniqueI2 && totalI2next < totalI2)) {
+        uniqueI2 = uniqueI2next;
         const aux = pizzas[k];
         pizzas[k] = pizzas[j];
         pizzas[j] = aux;
@@ -57,11 +55,13 @@ const solveProblem = fileName => {
     }
   }
 
+  // TODO only one solution
+
   // maximize assigning to teams of 2, 3 or 4
   for (let i = 0; i < M; i) {
-    const i2 = i + 1 < M ? getNumberOfUniqueIngredients([pizzas[i], pizzas[i + 1]]) : 0;
-    const i3 = i + 2 < M ? getNumberOfUniqueIngredients([pizzas[i], pizzas[i + 1], pizzas[i + 2]]) : 0;
-    const i4 = i + 3 < M ? getNumberOfUniqueIngredients([pizzas[i], pizzas[i + 1], pizzas[i + 2], pizzas[i + 3]]) : 0;
+    const {unique: i2 = 0} = i + 1 < M ? getNumberOfIngredients([pizzas[i], pizzas[i + 1]]) : 0;
+    const {unique: i3 = 0} = i + 2 < M ? getNumberOfIngredients([pizzas[i], pizzas[i + 1], pizzas[i + 2]]) : 0;
+    const {unique: i4 = 0} = i + 3 < M ? getNumberOfIngredients([pizzas[i], pizzas[i + 1], pizzas[i + 2], pizzas[i + 3]]) : 0;
     if (i4 > i3 && i4 > i2 && deliveriesT4 < T4) {
       assignTeamToPizzas(4, i, pizzas);
       i += 4;
@@ -122,17 +122,19 @@ const getOutputData = ({pizzas, deliveries}) => {
   return deliveries + '\n' + deliveredPizzas;
 };
 
-const getNumberOfUniqueIngredients = pizzas => {
+const getNumberOfIngredients = pizzas => {
   const uniqueIngredients = [];
+  let total = 0;
   pizzas.forEach(pizza => {
     const [id, i, ...ingredients] = pizza;
+    total += +i;
     ingredients.forEach(ingredient => {
       if (uniqueIngredients.indexOf(ingredient) === -1) {
         uniqueIngredients.push(ingredient);
       }
     });
   });
-  return uniqueIngredients.length;
+  return {unique: uniqueIngredients.length, total};
 };
 
 // solve for all files
