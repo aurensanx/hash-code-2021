@@ -35,11 +35,6 @@ const solveProblem = fileName => {
   pizzas.sort(sortPizzas1);
   // pizzas.sort(sortPizzas2);
 
-  let score = 0;
-  let deliveriesT2 = 0;
-  let deliveriesT3 = 0;
-  let deliveriesT4 = 0;
-
   for (let i = 0; i + 1 < M; i++) {
     // TODO number of ingredientes for 2, 3 and 4
     let {unique: uniqueI2, total: totalI2} = getNumberOfIngredients([pizzas[i], pizzas[i + 1]]);
@@ -55,10 +50,25 @@ const solveProblem = fileName => {
     }
   }
 
-  // TODO only one solution
+  // let { deliveriesT2, deliveriesT3, deliveriesT4, score } = solve1(M, pizzas, T2, T3, T4);
+  let { deliveriesT2, deliveriesT3, deliveriesT4, score } = solve2(M, pizzas, T2, T3, T4);
 
-  // maximize assigning to teams of 2, 3 or 4
+  return {outputData: getOutputData({pizzas, deliveries: deliveriesT2 + deliveriesT3 + deliveriesT4}), score: score};
+};
+
+const assignTeamToPizzas = (n, i, pizzas) => {
+  for (let j = i; j < i + n; j++) {
+    pizzas[j].unshift(n);
+  }
+};
+
+const solve1 = (M, pizzas, T2, T3, T4) => {
+  let deliveriesT2 = 0;
+  let deliveriesT3 = 0;
+  let deliveriesT4 = 0;
+  let score = 0;
   for (let i = 0; i < M; i) {
+    console.log(i);
     const {unique: i2 = 0} = i + 1 < M ? getNumberOfIngredients([pizzas[i], pizzas[i + 1]]) : 0;
     const {unique: i3 = 0} = i + 2 < M ? getNumberOfIngredients([pizzas[i], pizzas[i + 1], pizzas[i + 2]]) : 0;
     const {unique: i4 = 0} = i + 3 < M ? getNumberOfIngredients([pizzas[i], pizzas[i + 1], pizzas[i + 2], pizzas[i + 3]]) : 0;
@@ -82,14 +92,72 @@ const solveProblem = fileName => {
       break;
     }
   }
-
-  return {outputData: getOutputData({pizzas, deliveries: deliveriesT2 + deliveriesT3 + deliveriesT4}), score: score};
+  return { deliveriesT2, deliveriesT3, deliveriesT4, score };
 };
 
-const assignTeamToPizzas = (n, i, pizzas) => {
-  for (let j = i; j < i + n; j++) {
-    pizzas[j].unshift(n);
+const solve2 = (M, pizzas, T2, T3, T4) => {
+  let deliveriesT2 = 0;
+  let deliveriesT3 = 0;
+  let deliveriesT4 = 0;
+  let score = 0;
+  for (let i = 0; i < M; i) {
+    if (i + 3 < M) {
+      const {unique: i2a1 = 0} = getNumberOfIngredients([pizzas[i], pizzas[i + 1]]);
+      const {unique: i2a2 = 0} = getNumberOfIngredients([pizzas[i + 2], pizzas[i + 3]]);
+      const {unique: i2b1 = 0} = getNumberOfIngredients([pizzas[i], pizzas[i + 2]]);
+      const {unique: i2b2 = 0} = getNumberOfIngredients([pizzas[i + 1], pizzas[i + 3]]);
+      const {unique: i2c1 = 0} = getNumberOfIngredients([pizzas[i], pizzas[i + 3]]);
+      const {unique: i2c2 = 0} = getNumberOfIngredients([pizzas[i + 1], pizzas[i + 2]]);
+      const {unique: i3 = 0} = getNumberOfIngredients([pizzas[i], pizzas[i + 1], pizzas[i + 2]]);
+      const {unique: i4 = 0} = getNumberOfIngredients([pizzas[i], pizzas[i + 1], pizzas[i + 2], pizzas[i + 3]]);
+
+      const s2a = Math.pow(i2a1, 2) + Math.pow(i2a2, 2);
+      const s2b = Math.pow(i2b1, 2) + Math.pow(i2b2, 2);
+      const s2c = Math.pow(i2c1, 2) + Math.pow(i2c2, 2);
+      const s2 = Math.max(s2a, s2b, s2c);
+      const s3 = Math.pow(i3, 2);
+      const s4 = Math.pow(i4, 2);
+
+      if (((s4 > s3 && s4 > s2) || deliveriesT2 + 1 >= T2) && deliveriesT4 < T4) {
+        assignTeamToPizzas(4, i, pizzas);
+        i += 4;
+        deliveriesT4++;
+        score += s4;
+      } else if ((s3 > s2 || deliveriesT2 + 1 >= T2) && deliveriesT3 < T3) {
+        assignTeamToPizzas(3, i, pizzas);
+        i += 3;
+        deliveriesT3++;
+        score += s3;
+      } else if (deliveriesT2 + 1 < T2) {
+        if (s2c > s2b && s2c > s2a) {
+          const aux = pizzas[i + 1];
+          pizzas[i + 1] = pizzas[i + 3];
+          pizzas[i + 3] = aux;
+          score += s2c;
+        } else if (s2b > s2c && s2b > s2a) {
+          const aux = pizzas[i + 1];
+          pizzas[i + 1] = pizzas[i + 2];
+          pizzas[i + 2] = aux;
+          score += s2b;
+        } else {
+          score += s2a;
+        }
+        assignTeamToPizzas(2, i, pizzas);
+        i += 2;
+        deliveriesT2++;
+        assignTeamToPizzas(2, i, pizzas);
+        i += 2;
+        deliveriesT2++;
+      } else {
+        remove(pizzas, (pizza, n) => n === i);
+        M--;
+      }
+    } else {
+      remove(pizzas, (pizza, n) => n === i);
+      M--;
+    }
   }
+  return { deliveriesT2, deliveriesT3, deliveriesT4, score };
 };
 
 const shuffle = array => {
